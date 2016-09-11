@@ -1,0 +1,7 @@
+[template]
+ src   = "config.json.tmpl"
+ dest  = "/app/conf/config.json"
+ keys = [
+  "/market/data/address",
+  "/http/port"
+ ]

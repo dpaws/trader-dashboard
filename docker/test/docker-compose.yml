@@ -1,0 +1,21 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: ${NETWORK_NAME}
+
+services:
+  test:
+    build:
+      context: ../../
+      dockerfile: docker/test/Dockerfile
+      args:
+        app_version: ${APP_VERSION}
+    command: 
+      - mvn
+      - versions:set
+      - "-DnewVersion=${APP_VERSION}"
+      - clean
+      - test
+      - package
