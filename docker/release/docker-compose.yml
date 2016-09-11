@@ -1,0 +1,49 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: ${NETWORK_NAME}
+
+services:
+  app:
+    build:
+      context: ../../
+      dockerfile: docker/release/Dockerfile
+      args:
+        app_version: ${APP_VERSION}
+    environment:
+      HTTP_PORT: ${HTTP_PORT}
+      MARKET_DATA_ADDRESS: market
+      CLUSTER_GROUP_PASSWORD: password
+    networks:
+      default:
+        aliases:
+          - quote-generator
+    command:
+      - java
+      - -jar
+      - /app/quote-generator-${APP_VERSION}-fat.jar
+      - -conf=/app/conf/config.json
+      - -Dvertx.hazelcast.config=/app/conf/cluster.xml
+      - -cluster
+  test:
+    image: dockerproductionaws/microtrader-test
+    links:
+      - app
+    environment:
+      HTTP_PORT: ${HTTP_PORT}
+      MARKET_DATA_ADDRESS: market
+      CLUSTER_GROUP_PASSWORD: password
+    command:
+      - mvn
+      - test
+      - -Dtest=TraderDashboardTest
+      - -Dvertx.hazelcast.config=/app/conf/cluster.xml
+  agent:
+    image: dockerproductionaws/ansible
+    links:
+      - app
+    environment:
+      PROBE_HOST: app
+      PROBE_PORT: ${HTTP_PORT}
