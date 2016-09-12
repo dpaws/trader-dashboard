@@ -1,5 +1,6 @@
-package com.pluralsight.dpaws.traderdashboard;
+package com.pluralsight.dockerproductionaws.traderdashboard;
 
+import com.pluralsight.dockerproductionaws.common.MicroserviceVerticle;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
@@ -13,17 +14,20 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.servicediscovery.ServiceDiscovery;
+import io.vertx.servicediscovery.ServiceDiscoveryOptions;
+import io.vertx.servicediscovery.rest.ServiceDiscoveryRestEndpoint;
 
 /**
  * Created by jmenga on 12/09/16.
  */
-public class DashboardVerticle extends AbstractVerticle {
+public class DashboardVerticle extends MicroserviceVerticle {
     private CircuitBreaker circuit;
     private HttpClient client;
 
     @Override
     public void start() {
-
+        discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
         Router router = Router.router(vertx);
 
         // Http Client
@@ -43,6 +47,9 @@ public class DashboardVerticle extends AbstractVerticle {
 
         sockJSHandler.bridge(options);
         router.route("/eventbus/*").handler(sockJSHandler);
+
+        // Discovery endpoint
+        ServiceDiscoveryRestEndpoint.create(router, discovery);
 
         // Last operations
         router.get("/operations").handler(this::callAuditServiceWithExceptionHandlerWithCircuitBreaker);
