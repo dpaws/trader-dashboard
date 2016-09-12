@@ -16,6 +16,8 @@ services:
       HTTP_PORT: ${HTTP_PORT}
       MARKET_DATA_ADDRESS: market
       CLUSTER_GROUP_PASSWORD: password
+    ports:
+      - "${HTTP_PORT}"
     networks:
       default:
         aliases:
@@ -23,7 +25,7 @@ services:
     command:
       - java
       - -jar
-      - /app/quote-generator-${APP_VERSION}-fat.jar
+      - /app/trader-dashboard-${APP_VERSION}-fat.jar
       - -conf=/app/conf/config.json
       - -Dvertx.hazelcast.config=/app/conf/cluster.xml
       - -cluster

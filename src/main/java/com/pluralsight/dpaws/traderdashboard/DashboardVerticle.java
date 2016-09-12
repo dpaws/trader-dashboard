@@ -3,12 +3,10 @@ package com.pluralsight.dpaws.traderdashboard;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -63,7 +61,7 @@ public class DashboardVerticle extends AbstractVerticle {
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
-                .listen(8080);
+                .listen(config().getInteger("HTTP_PORT"));
     }
 
     private void callAuditServiceWithExceptionHandlerWithCircuitBreaker(RoutingContext context) {

@@ -9,7 +9,7 @@ REPO_NAME ?= trader-dashboard
 TEST_REPO_NAME ?= trader-dashboard-dev
 
 # Release settings
-# export HTTP_PORT ?= 8000
+export HTTP_PORT ?= 8000
 
 # Common settings
 include Makefile.settings
@@ -48,9 +48,9 @@ release: init
 	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) app
 	${INFO} "Running acceptance tests..."
 	@ docker-compose $(RELEASE_ARGS) run agent
-	@ docker-compose $(RELEASE_ARGS) up test
-	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q test):/app/target/surefire-reports/. reports
-	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) test
+# @ docker-compose $(RELEASE_ARGS) up test
+# @ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q test):/app/target/surefire-reports/. reports
+# ${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) test
 	${INFO} "Acceptance testing complete"
 
 # Cleans environment
