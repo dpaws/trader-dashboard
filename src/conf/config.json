@@ -2,5 +2,6 @@
   "MARKET_DATA_ADDRESS": "market",
   "PORTFOLIO_ADDRESS": "portfolio",
   "AUDIT_HOST": "audit",
-  "AUDIT_PORT": 8000
+  "AUDIT_PORT": 8000,
+  "HTTP_PORT": 8080
 }
