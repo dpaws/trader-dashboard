@@ -1,6 +1,8 @@
+reports
+target
+bower_components
 .idea
 .vertx
 .env
-target
+*.versionsBackup
 *.iml
-bower_components
