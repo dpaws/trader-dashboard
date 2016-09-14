@@ -3,7 +3,6 @@ package com.pluralsight.dockerproductionaws.traderdashboard;
 import com.pluralsight.dockerproductionaws.common.MicroserviceVerticle;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
@@ -31,7 +30,7 @@ public class DashboardVerticle extends MicroserviceVerticle {
         Router router = Router.router(vertx);
 
         // Http Client
-        HttpClientOptions clientOptions = new HttpClientOptions().setDefaultHost(config().getString("AUDIT_HOST") + ".");
+        HttpClientOptions clientOptions = new HttpClientOptions().setDefaultHost(config().getString("AUDIT_HOST"));
         clientOptions.setDefaultPort(config().getInteger("AUDIT_PORT"));
         client = vertx.createHttpClient(clientOptions);
 
@@ -64,7 +63,6 @@ public class DashboardVerticle extends MicroserviceVerticle {
                         .setFallbackOnFailure(true)
                         .setResetTimeout(2000)
                         .setTimeout(1000));
-//                .openHandler(v -> retrieveAuditService());
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
