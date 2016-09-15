@@ -15,7 +15,7 @@ RUN npm install bower -g
 
 # Install dependencies
 # We call versions:set to force dependences for the version plugin to be installed
-RUN mvn versions:set clean install
+RUN mvn versions:set clean install -Drevision=snapshot
 
 # Copy the application source and set the app version
 COPY src /app/src
