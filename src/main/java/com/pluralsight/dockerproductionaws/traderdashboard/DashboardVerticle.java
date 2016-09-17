@@ -1,6 +1,8 @@
 package com.pluralsight.dockerproductionaws.traderdashboard;
 
 import com.pluralsight.dockerproductionaws.common.MicroserviceVerticle;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.buffer.Buffer;
@@ -23,23 +25,27 @@ import io.vertx.servicediscovery.rest.ServiceDiscoveryRestEndpoint;
 public class DashboardVerticle extends MicroserviceVerticle {
     private CircuitBreaker circuit;
     private HttpClient client;
+    private Config config;
 
     @Override
     public void start() {
+        // Get configuration
+        config = ConfigFactory.load();
+
         discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
         Router router = Router.router(vertx);
 
         // Http Client
-        HttpClientOptions clientOptions = new HttpClientOptions().setDefaultHost(config().getString("AUDIT_HOST"));
-        clientOptions.setDefaultPort(config().getInteger("AUDIT_PORT"));
+        HttpClientOptions clientOptions = new HttpClientOptions().setDefaultHost(config.getString("audit.host"));
+        clientOptions.setDefaultPort(config.getInt("audit.port"));
         client = vertx.createHttpClient(clientOptions);
 
         // Event bus bridge
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         BridgeOptions options = new BridgeOptions();
         options
-                .addOutboundPermitted(new PermittedOptions().setAddress(config().getString("MARKET_DATA_ADDRESS")))
-                .addOutboundPermitted(new PermittedOptions().setAddress(config().getString("PORTFOLIO_ADDRESS")))
+                .addOutboundPermitted(new PermittedOptions().setAddress(config.getString("market.address")))
+                .addOutboundPermitted(new PermittedOptions().setAddress(config.getString("portfolio.address")))
                 .addOutboundPermitted(new PermittedOptions().setAddress("service.portfolio"))
                 .addInboundPermitted(new PermittedOptions().setAddress("service.portfolio"))
                 .addOutboundPermitted(new PermittedOptions().setAddress("vertx.circuit-breaker"));
@@ -66,7 +72,7 @@ public class DashboardVerticle extends MicroserviceVerticle {
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
-                .listen(config().getInteger("HTTP_PORT"));
+                .listen(config.getInt("http.port"));
     }
 
     private void callAuditServiceWithExceptionHandlerWithCircuitBreaker(RoutingContext context) {
