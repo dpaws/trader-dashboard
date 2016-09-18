@@ -72,7 +72,7 @@ release: init
 # Creates a Microtrader demo environment
 demo: clean-demo init
 	${INFO} "Pulling latest images..."
-	@ $(if $(NOPULL_ARG),,docker-compose $(DEMO_ARGS) pull quote-generator audit-service portfolio-service db quote-agent audit-agent)
+	@ $(if $(NOPULL_ARG),,docker-compose $(DEMO_ARGS) pull trader-dashboard quote-generator audit-service portfolio-service db quote-agent audit-agent)
 	${INFO} "Starting quote generator..."
 	@ docker-compose $(DEMO_ARGS) run quote-agent
 	${INFO} "Starting portfolio service..."
