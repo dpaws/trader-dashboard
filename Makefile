@@ -32,6 +32,10 @@ include Makefile.settings
 version:
 	@ echo $(APP_VERSION)
 
+# Prints short commit hash
+version%hash:
+	@ echo $$(git rev-parse --short HEAD)
+
 # Creates workflow infrastucture
 init:
 	${INFO} "Checking networking..."
@@ -91,7 +95,7 @@ demo: init
 
 # Executes a full workflow
 all: clean test release
-	@ make tag latest $$(make version)
+	@ make tag latest $$(make version) $$(make version:hash)
 	@ make publish
 	@ make clean
 
