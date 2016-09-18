@@ -44,6 +44,8 @@ export DB_REFRESH = $(if $(REFRESH_ARG),true,false)
 
 # Full image names
 TEST_IMAGE := $(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME):$(APP_VERSION)
+RELEASE_IMAGE := $(DOCKER_REGISTRY)/$(ORG_NAME)/$(REPO_NAME):$(APP_VERSION)
+
 # Using the before filter in Docker 1.12 will be a better approach
 LOAD_IMAGE_EXISTS := $(strip $(shell docker images -q -f label=application=$(REPO_NAME)))
 ifeq ($(DOCKER_REGISTRY),docker.io)
