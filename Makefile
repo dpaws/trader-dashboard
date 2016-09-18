@@ -11,10 +11,22 @@ TEST_REPO_NAME ?= trader-dashboard-dev
 # Release settings
 export HTTP_PORT ?= 8000
 
+# Demo settings
+DEMO_COMPOSE_FILE := docker/demo/docker-compose.yml
+DEMO_PROJECT := $(REL_PROJECT)demo
+DEMO_ARGS = -p $(DEMO_PROJECT) -f $(DEMO_COMPOSE_FILE) $(VERBOSE_FLAG)
+DEMO_PORT_EXPR = $$(docker-compose $(DEMO_ARGS) ps -q trader-dashboard | xargs -I ID docker port ID $(HTTP_PORT))
+DEMO_PORT = $$(echo $$(IFS=':' read -r -a array <<< "$(DEMO_PORT_EXPR)" && echo "$${array[1]}"))
+
+export MARKET_DATA_ADDRESS ?= market
+export DB_NAME ?= audit
+export DB_USER ?= audit
+export DB_PASSWORD ?= password
+
 # Common settings
 include Makefile.settings
 
-.PHONY: version demo test build release clean tag login logout publish compose dcompose database save load
+.PHONY: version demo test build release clean tag login logout publish compose dcompose database save load demo
 
 # Prints version
 version:
@@ -53,12 +65,38 @@ release: init
 # ${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) test
 	${INFO} "Acceptance testing complete"
 
+# Creates a Microtrader demo environment
+demo: init
+	${INFO} "Destroying demo environment..."
+	@ docker-compose $(DEMO_ARGS) down -v || true
+	${INFO} "Pulling latest images..."
+	@ $(if $(NOPULL_ARG),,docker-compose $(DEMO_ARGS) pull quote-generator audit-service portfolio-service db quote-agent audit-agent)
+	${INFO} "Building images..."
+	@ docker-compose $(DEMO_ARGS) build $(NOPULL_FLAG) trader-dashboard
+	${INFO} "Starting quote generator..."
+	@ docker-compose $(DEMO_ARGS) run quote-agent
+	${INFO} "Starting portfolio service..."
+	@ docker-compose $(DEMO_ARGS) up -d portfolio-service
+	@ sleep 5
+	${INFO} "Starting audit database..."
+	@ docker-compose $(DEMO_ARGS) run audit-agent
+	${INFO} "Running audit migrations..."
+	@ docker-compose $(DEMO_ARGS) run audit-migrate
+	${INFO} "Starting audit service..."
+	@ docker-compose $(DEMO_ARGS) up -d audit-service
+	${INFO} "Starting trader dashboard..."
+	@ docker-compose $(DEMO_ARGS) up -d trader-dashboard
+	${INFO} "Demo environment created"
+	${INFO} "Trader dashboard is running on http://$(DOCKER_MACHINE_IP):$(DEMO_PORT)"
+
 # Cleans environment
 clean:
 	${INFO} "Destroying test environment..."
 	@ docker-compose $(TEST_ARGS) down -v || true
 	${INFO} "Destroying release environment..."
 	@ docker-compose $(RELEASE_ARGS) down -v || true
+	${INFO} "Destroying demo environment..."
+	@ docker-compose $(DEMO_ARGS) down -v || true
 	${INFO} "Removing dangling images..."
 	@ docker images -q -f dangling=true -f label=application=$(REPO_NAME) | xargs -I ARGS docker rmi -f ARGS
 	${INFO} "Clean complete"

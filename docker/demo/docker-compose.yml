@@ -1,0 +1,92 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: ${NETWORK_NAME}
+
+services:
+  trader-dashboard:
+    build:
+      context: ../../
+      dockerfile: docker/release/Dockerfile
+      args:
+        app_version: ${APP_VERSION}
+    dns_search: .
+    environment:
+      HTTP_PORT: ${HTTP_PORT}
+      AUDIT_HOST: audit-service
+      AUDIT_PORT: ${HTTP_PORT}
+      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}
+      CLUSTER_GROUP_NAME: microtrader
+      CLUSTER_GROUP_PASSWORD: password
+    ports:
+      - "${HTTP_PORT}"
+  quote-generator:
+    image: dockerproductionaws/quote-generator
+    dns_search: .
+    environment:
+      HTTP_HOST: quote-generator
+      HTTP_PORT: ${HTTP_PORT}
+      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}
+      CLUSTER_GROUP_NAME: microtrader
+      CLUSTER_GROUP_PASSWORD: password
+    ports:
+      - "${HTTP_PORT}"
+  portfolio-service:
+    image: dockerproductionaws/portfolio-service
+    dns_search: .
+    environment:
+      CLUSTER_GROUP_NAME: microtrader
+      CLUSTER_GROUP_PASSWORD: password
+    ports:
+      - "${HTTP_PORT}"
+  audit-service:
+    image: dockerproductionaws/audit-service
+    dns_search: .
+    environment:
+      HTTP_HOST: audit-service
+      HTTP_PORT: ${HTTP_PORT}
+      CLUSTER_GROUP_NAME: microtrader
+      CLUSTER_GROUP_PASSWORD: password
+      JDBC_URL: jdbc:mysql://db/${DB_NAME}?useSSL=false
+      JDBC_USER: ${DB_USER}
+      JDBC_PASSWORD: ${DB_PASSWORD}
+      JDBC_DRIVERCLASS: com.mysql.jdbc.Driver
+    ports:
+      - "${HTTP_PORT}"
+  audit-migrate:
+    image: dockerproductionaws/audit-service
+    dns_search: .
+    environment:
+      JDBC_URL: jdbc:mysql://db/${DB_NAME}?useSSL=false
+      JDBC_USER: ${DB_USER}
+      JDBC_PASSWORD: ${DB_PASSWORD}
+      JDBC_DRIVERCLASS: com.mysql.jdbc.Driver
+      DB_MIGRATIONS_LOCATION: db/mysql
+    command:
+       - java
+       - -cp
+       - /app/app.jar
+       - com.pluralsight.dockerproductionaws.admin.Migrate
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+  quote-agent:
+    image: dockerproductionaws/ansible
+    links:
+      - quote-generator
+    environment:
+      PROBE_HOST: quote-generator
+      PROBE_PORT: ${HTTP_PORT}
+  audit-agent:
+    image: dockerproductionaws/ansible
+    links:
+      - db
+    environment:
+      PROBE_HOST: db
+      PROBE_PORT: 3306
