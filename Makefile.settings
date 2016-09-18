@@ -19,10 +19,6 @@ DOCKER_REGISTRY ?= docker.io
 # Set DOCKER_REGISTRY_AUTH to auth endpoint for private Docker registry
 DOCKER_REGISTRY_AUTH ?=
 
-# APT Archive to mirror from
-APT_ARCHIVE ?= nz.archive.ubuntu.com
-export APT_MIRROR = $(APT_ARCHIVE)
-
 # Set shell
 SHELL=/bin/bash -e -o pipefail
 

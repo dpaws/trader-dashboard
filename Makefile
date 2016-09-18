@@ -26,7 +26,7 @@ export DB_PASSWORD ?= password
 # Common settings
 include Makefile.settings
 
-.PHONY: version version%hash demo test build release clean tag login logout publish compose dcompose database save load demo all
+.PHONY: version version%hash test build release clean tag login logout publish compose dcompose database save load demo all
 
 # Prints version
 version:
