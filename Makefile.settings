@@ -56,12 +56,17 @@ endif
 
 # Networking settings
 export NETWORK_NAME := docker_workflow
-export APP_PORT ?= 8000
 NETWORK_SUBNET := 192.168.215.0/24
 NETWORK_GW := 192.168.215.1
 NETWORK_ID := $(shell docker network ls -f name=$(NETWORK_NAME) -q)
-DEMO_PORT = $$(echo $$(docker-compose $(RELEASE_ARGS) ps -q demo | xargs -I ID docker port ID $(APP_PORT)))
-STATS_PORT = $$(echo $$(docker-compose $(RELEASE_ARGS) ps -q app | xargs -I ID docker port ID 9000))
+
+# Docker machine settings
+DOCKER_MACHINE_NAME := $(shell if docker-machine active > /dev/null 2>&1 ; then echo $$(docker-machine active); fi)
+ifneq ($(DOCKER_MACHINE_NAME),)
+  DOCKER_MACHINE_IP := $(shell docker-machine ip $(DOCKER_MACHINE_NAME))
+else
+	DOCKER_MACHINE_IP := \<docker-host\>
+endif
 
 # Cosmetics
 RED := "\e[1;31m"
@@ -117,19 +122,9 @@ CHECK := @bash -c '\
   then exit $(INSPECT); fi' VALUE
 
 # Extract extra arguments
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),build-local release-env release test clean database snapshot))
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),release test clean database snapshot demo))
   ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(ARGS):;@:)
-endif
-
-# Extract build arguments
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),build build-pull demo))
-  BUILD_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  ifneq ($(BUILD_ARGS),)
-    BUILD_VERSION := $(firstword $(BUILD_ARGS))
-    ARGS := $(wordlist 2, $(words $(BUILD_ARGS)),$(BUILD_ARGS))
-  endif
-  $(eval $(BUILD_ARGS):;@:)
 endif
 
 # Extract tag arguments
