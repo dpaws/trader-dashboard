@@ -7,11 +7,7 @@ networks:
 
 services:
   trader-dashboard:
-    build:
-      context: ../../
-      dockerfile: docker/release/Dockerfile
-      args:
-        app_version: ${APP_VERSION}
+    image: dockerproductionaws/trader-dashboard
     dns_search: .
     environment:
       HTTP_PORT: ${HTTP_PORT}

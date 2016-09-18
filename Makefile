@@ -70,13 +70,9 @@ release: init
 	${INFO} "Acceptance testing complete"
 
 # Creates a Microtrader demo environment
-demo: init
-	${INFO} "Destroying demo environment..."
-	@ docker-compose $(DEMO_ARGS) down -v || true
+demo: clean-demo init
 	${INFO} "Pulling latest images..."
 	@ $(if $(NOPULL_ARG),,docker-compose $(DEMO_ARGS) pull quote-generator audit-service portfolio-service db quote-agent audit-agent)
-	${INFO} "Building images..."
-	@ docker-compose $(DEMO_ARGS) build $(NOPULL_FLAG) trader-dashboard
 	${INFO} "Starting quote generator..."
 	@ docker-compose $(DEMO_ARGS) run quote-agent
 	${INFO} "Starting portfolio service..."
@@ -100,16 +96,22 @@ all: clean test release
 	@ make clean
 
 # Cleans environment
-clean:
-	${INFO} "Destroying test environment..."
-	@ docker-compose $(TEST_ARGS) down -v || true
-	${INFO} "Destroying release environment..."
-	@ docker-compose $(RELEASE_ARGS) down -v || true
-	${INFO} "Destroying demo environment..."
-	@ docker-compose $(DEMO_ARGS) down -v || true
+clean: clean-test clean-release clean-demo
 	${INFO} "Removing dangling images..."
 	@ docker images -q -f dangling=true -f label=application=$(REPO_NAME) | xargs -I ARGS docker rmi -f ARGS
 	${INFO} "Clean complete"
+
+clean%test:
+	${INFO} "Destroying test environment..."
+	@ docker-compose $(TEST_ARGS) down -v || true
+
+clean%release:
+	${INFO} "Destroying release environment..."
+	@ docker-compose $(DEMO_ARGS) down -v || true
+
+clean%demo:
+	${INFO} "Destroying demo environment..."
+	@ docker-compose $(DEMO_ARGS) down -v || true
 
 # 'make tag <tag> [<tag>...]' tags development and/or release image with specified tag(s)
 tag: init
