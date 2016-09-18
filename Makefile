@@ -107,7 +107,7 @@ clean%test:
 
 clean%release:
 	${INFO} "Destroying release environment..."
-	@ docker-compose $(DEMO_ARGS) down -v || true
+	@ docker-compose $(RELEASE_ARGS) down -v || true
 
 clean%demo:
 	${INFO} "Destroying demo environment..."
