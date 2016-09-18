@@ -26,7 +26,7 @@ export DB_PASSWORD ?= password
 # Common settings
 include Makefile.settings
 
-.PHONY: version demo test build release clean tag login logout publish compose dcompose database save load demo
+.PHONY: version demo test build release clean tag login logout publish compose dcompose database save load demo all
 
 # Prints version
 version:
@@ -88,6 +88,12 @@ demo: init
 	@ docker-compose $(DEMO_ARGS) up -d trader-dashboard
 	${INFO} "Demo environment created"
 	${INFO} "Trader dashboard is running on http://$(DOCKER_MACHINE_IP):$(DEMO_PORT)"
+
+# Executes a full workflow
+all: clean test release
+	@ make tag latest $$(make version)
+	@ make publish
+	@ make clean
 
 # Cleans environment
 clean:
