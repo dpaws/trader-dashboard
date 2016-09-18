@@ -4,5 +4,5 @@ LABEL application=trader-dashboard
 
 # Copy application artefacts
 ARG app_version
-ENV app_version $app_version
-COPY target/trader-dashboard-${app_version}-fat.jar /app/
+LABEL application.version=${app_version}
+COPY target/trader-dashboard-${app_version}-fat.jar /app/app.jar
