@@ -14,8 +14,10 @@ services:
       AUDIT_HOST: audit-service
       AUDIT_PORT: ${HTTP_PORT}
       MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}
+      CLUSTER_PORT: 6701
       CLUSTER_GROUP_NAME: microtrader
       CLUSTER_GROUP_PASSWORD: password
+      _JAVA_OPTIONS: "-Xms256m -Xmx1g"
     ports:
       - "${HTTP_PORT}"
   quote-generator:
