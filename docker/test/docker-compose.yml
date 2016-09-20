@@ -14,8 +14,6 @@ services:
         app_version: ${APP_VERSION}
     command: 
       - mvn
-      - versions:set
-      - "-DnewVersion=${APP_VERSION}"
       - clean
       - test
       - package

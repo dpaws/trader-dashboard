@@ -26,15 +26,11 @@ export DB_PASSWORD ?= password
 # Common settings
 include Makefile.settings
 
-.PHONY: version version%hash test build release clean tag login logout publish compose dcompose database save load demo all
+.PHONY: version test build release clean tag login logout publish compose dcompose database save load demo all
 
 # Prints version
 version:
 	@ echo $(APP_VERSION)
-
-# Prints short commit hash
-version%hash:
-	@ echo $$(git rev-parse --short HEAD)
 
 # Creates workflow infrastucture
 init:
@@ -91,7 +87,7 @@ demo: clean-demo init
 
 # Executes a full workflow
 all: clean test release
-	@ make tag latest $$(make version) $$(make version:hash)
+	@ make tag latest $(APP_VERSION) $(GIT_HASH) $(GIT_TAG)
 	@ make publish
 	@ make clean
 

@@ -22,17 +22,16 @@ DOCKER_REGISTRY_AUTH ?=
 # Set shell
 SHELL=/bin/bash -e -o pipefail
 
-# Build and Version Settings
-TAGGED_VERSION := $(shell echo $$(git tag --points-at HEAD))
-LAST_VERSION := $(shell echo $$(git describe --tags --abbrev=0))
-ifeq ($(TAGGED_VERSION),$(LAST_VERSION))
-  APP_VERSION ?= $(TAGGED_VERSION)
+# App version settings
+GIT_TIMESTAMP := $(shell echo $$(git log -1 --pretty='format:%cd' --date='format:%Y%m%d%H%M%S'))
+GIT_HASH := $(shell echo $$(git rev-parse --short HEAD))
+GIT_TAG := $(shell echo $$(git tag --points-at HEAD))
+ifeq ($(BUILD_ID),)
+	APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH)
 else
-  BUILD_ID ?= $(shell echo $$(git describe --abbrev) | awk -F- '{print $$(NF-1)}')
-  BRANCH_NAME := $(shell echo $${BRANCH_NAME:-$$(git rev-parse --abbrev-ref HEAD)} | sed -e 's/[^a-zA-Z0-9\.]/./g')
-  APP_VERSION ?= $(shell echo $(LAST_VERSION) | awk -F. '{sub(/[[:digit:]]+$$/,$$NF+1)}1').$(BRANCH_NAME).$(BUILD_ID)
+	APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH).$(BUILD_ID)
 endif
-export APP_VERSION BUILD_VERSION
+export APP_VERSION
 
 # Database refresh settings
 REFRESH_ARG = $(findstring refresh,$(ARGS))
