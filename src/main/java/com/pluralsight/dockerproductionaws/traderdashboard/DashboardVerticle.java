@@ -5,10 +5,12 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -17,7 +19,9 @@ import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
+import io.vertx.servicediscovery.ServiceReference;
 import io.vertx.servicediscovery.rest.ServiceDiscoveryRestEndpoint;
+import io.vertx.servicediscovery.types.HttpEndpoint;
 
 /**
  * Created by jmenga on 12/09/16.
@@ -26,19 +30,15 @@ public class DashboardVerticle extends MicroserviceVerticle {
     private CircuitBreaker circuit;
     private HttpClient client;
     private Config config;
+    private String root;
 
     @Override
-    public void start() {
+    public void start(Future<Void> future) {
         // Get configuration
         config = ConfigFactory.load();
 
         discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
         Router router = Router.router(vertx);
-
-        // Http Client
-        HttpClientOptions clientOptions = new HttpClientOptions().setDefaultHost(config.getString("audit.host"));
-        clientOptions.setDefaultPort(config.getInt("audit.port"));
-        client = vertx.createHttpClient(clientOptions);
 
         // Event bus bridge
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
@@ -68,11 +68,36 @@ public class DashboardVerticle extends MicroserviceVerticle {
                         .setMaxFailures(2)
                         .setFallbackOnFailure(true)
                         .setResetTimeout(2000)
-                        .setTimeout(1000));
+                        .setTimeout(1000))
+                        .openHandler(v -> retrieveAuditService());
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
-                .listen(config.getInt("http.port"));
+                .listen(config.getInt("http.port"), ar -> {
+                    if (ar.failed()) {
+                        future.fail(ar.cause());
+                    } else {
+                        retrieveAuditService();
+                        future.complete();
+                    }
+                });
+    }
+
+    private Future<Void> retrieveAuditService() {
+        Future<Void> future = Future.future();
+
+        discovery.getRecord(new JsonObject().put("name", "audit"), ar -> {
+            if (ar.failed()) {
+                future.fail(ar.cause());
+            } else {
+                ServiceReference reference = discovery.getReference(ar.result());
+                this.root = reference.record().getLocation().getString("root");
+                this.client = reference.get();
+                future.complete();
+            }
+        });
+
+        return future;
     }
 
     private void callAuditServiceWithExceptionHandlerWithCircuitBreaker(RoutingContext context) {
@@ -82,7 +107,7 @@ public class DashboardVerticle extends MicroserviceVerticle {
 
         circuit.executeWithFallback(
                 future ->
-                        client.get("/", response -> {
+                        client.get(root, response -> {
                             response
                                     .exceptionHandler(future::fail)
                                     .bodyHandler(future::complete);

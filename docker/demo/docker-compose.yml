@@ -24,6 +24,7 @@ services:
     image: dockerproductionaws/quote-generator
     dns_search: .
     environment:
+      HTTP_ROOT: /quote
       HTTP_HOST: quote-generator
       HTTP_PORT: ${HTTP_PORT}
       MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}
@@ -43,6 +44,7 @@ services:
     image: dockerproductionaws/audit-service
     dns_search: .
     environment:
+      HTTP_ROOT: /audit
       HTTP_HOST: audit-service
       HTTP_PORT: ${HTTP_PORT}
       CLUSTER_GROUP_NAME: microtrader
