@@ -88,3 +88,10 @@ services:
     environment:
       PROBE_HOST: db
       PROBE_PORT: 3306
+  trader-agent:
+    image: dockerproductionaws/ansible
+    links:
+      - trader-dashboard
+    environment:
+      PROBE_HOST: trader-dashboard
+      PROBE_PORT: ${HTTP_PORT}

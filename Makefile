@@ -82,6 +82,7 @@ demo: clean-demo init
 	@ docker-compose $(DEMO_ARGS) up -d audit-service
 	${INFO} "Starting trader dashboard..."
 	@ docker-compose $(DEMO_ARGS) up -d trader-dashboard
+	@ docker-compose $(DEMO_ARGS) run trader-agent
 	${INFO} "Demo environment created"
 	${INFO} "Trader dashboard is running on http://$(DOCKER_MACHINE_IP):$(DEMO_PORT)"
 
