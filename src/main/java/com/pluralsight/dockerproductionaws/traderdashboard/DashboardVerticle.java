@@ -89,6 +89,8 @@ public class DashboardVerticle extends MicroserviceVerticle {
         discovery.getRecord(new JsonObject().put("name", "audit"), ar -> {
             if (ar.failed()) {
                 future.fail(ar.cause());
+            } else if (ar.result() == null) {
+                future.fail("Could not retrieve audit service");
             } else {
                 ServiceReference reference = discovery.getReference(ar.result());
                 this.root = reference.record().getLocation().getString("root");
