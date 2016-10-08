@@ -71,15 +71,14 @@ demo: clean-demo init
 	@ $(if $(NOPULL_ARG),,docker-compose $(DEMO_ARGS) pull trader-dashboard quote-generator audit-service portfolio-service db quote-agent audit-agent)
 	${INFO} "Starting quote generator..."
 	@ docker-compose $(DEMO_ARGS) run quote-agent
-	${INFO} "Starting portfolio service..."
-	@ docker-compose $(DEMO_ARGS) up -d portfolio-service
-	@ sleep 5
 	${INFO} "Starting audit database..."
 	@ docker-compose $(DEMO_ARGS) run audit-agent
 	${INFO} "Running audit migrations..."
 	@ docker-compose $(DEMO_ARGS) run audit-migrate
 	${INFO} "Starting audit service..."
 	@ docker-compose $(DEMO_ARGS) up -d audit-service
+	${INFO} "Starting portfolio service..."
+	@ docker-compose $(DEMO_ARGS) up -d portfolio-service
 	${INFO} "Starting trader dashboard..."
 	@ docker-compose $(DEMO_ARGS) up -d trader-dashboard
 	@ docker-compose $(DEMO_ARGS) run trader-agent
