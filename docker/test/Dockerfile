@@ -1,4 +1,4 @@
-FROM dockerproductionaws/microtrader-dev
+FROM dpaws/microtrader-dev
 MAINTAINER Justin Menga <justin.menga@gmail.com>
 LABEL application=trader-dashboard
 

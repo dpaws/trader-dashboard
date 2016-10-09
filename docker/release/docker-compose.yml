@@ -20,7 +20,7 @@ services:
     ports:
       - "${HTTP_PORT}"
   test:
-    image: dockerproductionaws/microtrader-test
+    image: dpaws/microtrader-test
     links:
       - app
     environment:
@@ -34,7 +34,7 @@ services:
       - -Dtest=TraderDashboardTest
       - -Dvertx.hazelcast.config=/app/conf/cluster.xml
   agent:
-    image: dockerproductionaws/ansible
+    image: dpaws/ansible
     links:
       - app
     environment:

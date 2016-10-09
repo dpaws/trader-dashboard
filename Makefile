@@ -4,7 +4,7 @@ include .env
 
 # Project variables
 PROJECT_NAME ?= trader-dashboard
-ORG_NAME ?= dockerproductionaws
+ORG_NAME ?= dpaws
 REPO_NAME ?= trader-dashboard
 TEST_REPO_NAME ?= trader-dashboard-dev
 

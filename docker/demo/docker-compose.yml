@@ -7,7 +7,7 @@ networks:
 
 services:
   trader-dashboard:
-    image: dockerproductionaws/trader-dashboard
+    image: dpaws/trader-dashboard
     dns_search: .
     environment:
       HTTP_PORT: ${HTTP_PORT}
@@ -19,7 +19,7 @@ services:
     ports:
       - "${HTTP_PORT}"
   quote-generator:
-    image: dockerproductionaws/quote-generator
+    image: dpaws/quote-generator
     dns_search: .
     environment:
       HTTP_ROOT: /quote/
@@ -31,7 +31,7 @@ services:
     ports:
       - "${HTTP_PORT}"
   portfolio-service:
-    image: dockerproductionaws/portfolio-service
+    image: dpaws/portfolio-service
     dns_search: .
     environment:
       CLUSTER_GROUP_NAME: microtrader
@@ -39,7 +39,7 @@ services:
     ports:
       - "${HTTP_PORT}"
   audit-service:
-    image: dockerproductionaws/audit-service
+    image: dpaws/audit-service
     dns_search: .
     environment:
       HTTP_ROOT: /audit/
@@ -54,7 +54,7 @@ services:
     ports:
       - "${HTTP_PORT}"
   audit-migrate:
-    image: dockerproductionaws/audit-service
+    image: dpaws/audit-service
     dns_search: .
     environment:
       JDBC_URL: jdbc:mysql://db/${DB_NAME}?useSSL=false
@@ -66,7 +66,7 @@ services:
        - java
        - -cp
        - /app/app.jar
-       - com.pluralsight.dockerproductionaws.admin.Migrate
+       - com.pluralsight.dpaws.admin.Migrate
   db:
     image: mysql:5.7
     environment:
@@ -75,21 +75,21 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
   quote-agent:
-    image: dockerproductionaws/ansible
+    image: dpaws/ansible
     links:
       - quote-generator
     environment:
       PROBE_HOST: quote-generator
       PROBE_PORT: ${HTTP_PORT}
   audit-agent:
-    image: dockerproductionaws/ansible
+    image: dpaws/ansible
     links:
       - db
     environment:
       PROBE_HOST: db
       PROBE_PORT: 3306
   trader-agent:
-    image: dockerproductionaws/ansible
+    image: dpaws/ansible
     links:
       - trader-dashboard
     environment:
